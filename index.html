@@ -42,7 +42,6 @@
     }
 
     .fullscreen-icon, .sound-icon {
-      position: fixed;
       width: 40px;
       height: 40px;
       color: #000;
@@ -56,26 +55,29 @@
     }
 
     .fullscreen-icon {
+      position: fixed;
       top: 15px;
       right: 15px;
     }
 
-    .sound-icon {
+    .sound-group {
+      position: fixed;
       top: 15px;
       left: 15px;
+      z-index: 100;
+      transition: opacity 0.5s ease;
     }
 
-    .fullscreen-icon.hidden, .sound-icon.hidden {
+    .sound-group.hidden {
       opacity: 0;
       pointer-events: none;
     }
 
     .volume-slider-container {
-      position: fixed;
-      left: 60px;
-      top: 25px;
+      position: absolute;
+      left: 45px;
+      top: 0;
       width: 120px;
-      z-index: 100;
       display: none;
     }
 
@@ -119,18 +121,21 @@
 
       .volume-slider-container {
         width: 80px;
-        left: 50px;
+        left: 40px;
       }
     }
   </style>
 </head>
 <body>
-  <button class="sound-icon" id="soundBtn" onclick="toggleMute()" aria-label="Toggle sound">
-    <i class="fas fa-volume-mute" id="volumeIcon"></i>
-  </button>
-  <div class="volume-slider-container" id="volumeSliderContainer">
-    <input type="range" min="0" max="1" step="0.01" value="0.3" class="volume-slider" id="volumeSlider" oninput="adjustVolume(this.value)">
+  <div class="sound-group" id="soundGroup">
+    <button class="sound-icon" id="soundBtn" onclick="toggleMute()" aria-label="Toggle sound">
+      <i class="fas fa-volume-mute" id="volumeIcon"></i>
+    </button>
+    <div class="volume-slider-container" id="volumeSliderContainer">
+      <input type="range" min="0" max="1" step="0.01" value="0.3" class="volume-slider" id="volumeSlider" oninput="adjustVolume(this.value)">
+    </div>
   </div>
+
   <button class="fullscreen-icon" id="fullscreenBtn" onclick="toggleFullScreen()" aria-label="Toggle fullscreen mode">
     <i class="fas fa-expand"></i>
   </button>
@@ -177,23 +182,27 @@
 
     // Auto-hide fullscreen icon
     const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const soundBtn = document.getElementById('soundBtn');
+    const soundGroup = document.getElementById('soundGroup');
     const volumeSliderContainer = document.getElementById('volumeSliderContainer');
     const volumeIcon = document.getElementById('volumeIcon');
     let hideTimer;
 
-    function showFullscreenBtn() {
-      fullscreenBtn.classList.remove('hidden');
-      soundBtn.classList.remove('hidden');
+    function resetHideTimer() {
       clearTimeout(hideTimer);
       hideTimer = setTimeout(() => {
         fullscreenBtn.classList.add('hidden');
-        soundBtn.classList.add('hidden');
+        soundGroup.classList.add('hidden');
       }, 500); // Hide after 0.5 seconds
     }
 
+    function showFullscreenBtn() {
+      fullscreenBtn.classList.remove('hidden');
+      soundGroup.classList.remove('hidden');
+      resetHideTimer();
+    }
+
     // Show on any user interaction
-    ['mousemove', 'touchstart'].forEach(evt => {
+    ['mousemove', 'touchstart', 'click'].forEach(evt => {
       document.addEventListener(evt, showFullscreenBtn);
     });
 
