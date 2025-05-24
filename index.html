@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>HSC 2025 Countdown</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       background: #f4f4f4;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -12,83 +16,72 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
-      position: relative;
       padding: 1rem;
+      text-align: center;
     }
 
     h1 {
-      font-size: 6vw;
-      text-align: center;
-      margin-bottom: 2vh;
+      font-size: 2.2rem;
+      margin: 1rem 0;
     }
 
     .countdown {
-      font-size: 4.5vw;
+      font-size: 1.6rem;
       background: #fff;
-      padding: 2vh 4vw;
-      border-radius: 1rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      text-align: center;
+      padding: 1.2rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      word-wrap: break-word;
+      margin-bottom: 2rem;
     }
 
     .fullscreen-icon {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      cursor: pointer;
-      font-size: 4vw;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 1rem;
       background: #333;
       color: #fff;
       border: none;
-      padding: 0.8vh 1.5vw;
-      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 100;
     }
 
-    /* Adjust for very small screens */
     @media (max-width: 400px) {
       h1 {
-        font-size: 8vw;
+        font-size: 1.8rem;
       }
 
       .countdown {
-        font-size: 5vw;
+        font-size: 1.3rem;
         padding: 1rem;
       }
 
       .fullscreen-icon {
-        font-size: 5vw;
-        padding: 0.6rem 1rem;
-      }
-    }
-
-    /* Adjust for larger screens */
-    @media (min-width: 768px) {
-      h1 {
-        font-size: 3rem;
-      }
-
-      .countdown {
-        font-size: 2rem;
-        padding: 1rem 2rem;
-      }
-
-      .fullscreen-icon {
-        font-size: 1.5rem;
-        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
       }
     }
   </style>
 </head>
 <body>
-  <button class="fullscreen-icon" onclick="toggleFullScreen()">⛶</button>
+  <button class="fullscreen-icon" onclick="toggleFullScreen()" aria-label="Toggle fullscreen mode">⛶</button>
   <h1>HSC 2025 Countdown</h1>
   <div class="countdown" id="countdown"></div>
 
   <script>
     const countdownElement = document.getElementById('countdown');
     const targetDate = new Date('2025-06-26T10:00:00+06:00');
+
+    function pad(num) {
+      return num.toString().padStart(2, '0');
+    }
 
     function updateCountdown() {
       const now = new Date();
@@ -99,18 +92,21 @@
         return;
       }
 
-      const hours = Math.floor(difference / (1000 * 60 * 60));
+      const totalHours = Math.floor(difference / (1000 * 60 * 60));
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-      countdownElement.textContent = `${hours} hours, ${minutes} minutes, ${seconds} seconds left`;
+      countdownElement.textContent =
+        `${pad(totalHours)} hours, ${pad(minutes)} minutes, ${pad(seconds)} seconds left`;
     }
 
     function toggleFullScreen() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
-      } else if (document.exitFullscreen) {
-        document.exitFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
       }
     }
 
