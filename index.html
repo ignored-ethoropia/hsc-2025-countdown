@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>HSC 2025 Countdown</title>
+  <!-- Include Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     * {
       box-sizing: border-box;
@@ -39,25 +41,64 @@
       margin-bottom: 2rem;
     }
 
-    .fullscreen-icon {
+    .fullscreen-icon, .sound-icon {
       position: fixed;
-      top: 15px;
-      right: 15px;
-      font-size: 1rem;
-      background: #333;
-      color: #fff;
+      width: 48px;
+      height: 48px;
+      color: #000;
       border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
       cursor: pointer;
       z-index: 100;
       opacity: 1;
       transition: opacity 0.5s ease;
+      background: none;
+      font-size: 28px;
     }
 
-    .fullscreen-icon.hidden {
+    .fullscreen-icon {
+      top: 15px;
+      right: 15px;
+    }
+
+    .sound-icon {
+      top: 15px;
+      left: 15px;
+    }
+
+    .fullscreen-icon.hidden, .sound-icon.hidden {
       opacity: 0;
       pointer-events: none;
+    }
+
+    .volume-slider-container {
+      position: fixed;
+      left: 70px;
+      top: 30px;
+      width: 150px;
+      z-index: 100;
+      display: none;
+    }
+
+    .volume-slider {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 8px;
+      background: #000;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #000;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .sound-icon:hover + .volume-slider-container, .volume-slider-container:hover {
+      display: block;
     }
 
     @media (max-width: 400px) {
@@ -70,15 +111,29 @@
         padding: 1rem;
       }
 
-      .fullscreen-icon {
-        font-size: 0.9rem;
-        padding: 0.4rem 0.8rem;
+      .fullscreen-icon, .sound-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+      }
+
+      .volume-slider-container {
+        width: 120px;
+        left: 55px;
       }
     }
   </style>
 </head>
 <body>
-  <button class="fullscreen-icon" id="fullscreenBtn" onclick="toggleFullScreen()" aria-label="Toggle fullscreen mode">⛶</button>
+  <button class="sound-icon" id="soundBtn" onclick="toggleMute()" aria-label="Toggle sound">
+    <i class="fas fa-volume-mute" id="volumeIcon"></i>
+  </button>
+  <div class="volume-slider-container" id="volumeSliderContainer">
+    <input type="range" min="0" max="1" step="0.01" value="0.3" class="volume-slider" id="volumeSlider" oninput="adjustVolume(this.value)">
+  </div>
+  <button class="fullscreen-icon" id="fullscreenBtn" onclick="toggleFullScreen()" aria-label="Toggle fullscreen mode">
+    <i class="fas fa-expand"></i>
+  </button>
 
   <h1>HSC 2025 Countdown</h1>
 
@@ -122,13 +177,18 @@
 
     // Auto-hide fullscreen icon
     const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const soundBtn = document.getElementById('soundBtn');
+    const volumeSliderContainer = document.getElementById('volumeSliderContainer');
+    const volumeIcon = document.getElementById('volumeIcon');
     let hideTimer;
 
     function showFullscreenBtn() {
       fullscreenBtn.classList.remove('hidden');
+      soundBtn.classList.remove('hidden');
       clearTimeout(hideTimer);
       hideTimer = setTimeout(() => {
         fullscreenBtn.classList.add('hidden');
+        soundBtn.classList.add('hidden');
       }, 3000); // Hide after 3 seconds
     }
 
@@ -141,6 +201,95 @@
     window.onload = () => {
       showFullscreenBtn();
     };
+
+    // Binaural Beat for Focus
+    let audioContext;
+    let leftGain, rightGain;
+    let isPlaying = false;
+    let isMuted = true; // Start in muted state
+    let lastVolume = 0.3; // Default volume when unmuted
+
+    function startBinauralBeat() {
+      if (isPlaying) return;
+
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const carrierFrequency = 200; // Base frequency in Hz
+      const beatFrequency = 20;     // Binaural beat frequency in Hz for focus
+
+      const leftOscillator = audioContext.createOscillator();
+      const rightOscillator = audioContext.createOscillator();
+
+      leftOscillator.frequency.value = carrierFrequency;
+      rightOscillator.frequency.value = carrierFrequency + beatFrequency;
+
+      leftGain = audioContext.createGain();
+      rightGain = audioContext.createGain();
+
+      const panner = audioContext.createStereoPanner();
+      panner.pan.value = -1; // Left channel
+
+      const merger = audioContext.createChannelMerger(2);
+
+      leftOscillator.connect(leftGain);
+      leftGain.connect(panner);
+      panner.connect(merger, 0, 0);
+
+      rightOscillator.connect(rightGain);
+      rightGain.connect(merger, 0, 1);
+
+      merger.connect(audioContext.destination);
+
+      leftOscillator.start();
+      rightOscillator.start();
+
+      isPlaying = true;
+    }
+
+    function stopBinauralBeat() {
+      if (!isPlaying) return;
+
+      audioContext.close();
+      isPlaying = false;
+    }
+
+    function toggleBinauralBeat() {
+      if (isPlaying) {
+        stopBinauralBeat();
+      } else {
+        startBinauralBeat();
+      }
+    }
+
+    function adjustVolume(volume) {
+      if (leftGain) {
+        leftGain.gain.value = volume;
+        rightGain.gain.value = volume;
+        lastVolume = volume;
+      }
+    }
+
+    function toggleMute() {
+      if (isMuted) {
+        adjustVolume(0.3); // Set volume to 30% when unmuted
+        volumeIcon.classList.remove('fa-volume-mute');
+        volumeIcon.classList.add('fa-volume-up');
+        volumeSliderContainer.style.display = 'block';
+      } else {
+        lastVolume = leftGain ? leftGain.gain.value : 0.3; // Store the current volume before muting
+        adjustVolume(0);
+        volumeIcon.classList.remove('fa-volume-up');
+        volumeIcon.classList.add('fa-volume-mute');
+        volumeSliderContainer.style.display = 'none';
+      }
+      isMuted = !isMuted;
+    }
+
+    // Start binaural beat on user interaction
+    document.addEventListener('click', () => {
+      if (!isPlaying) {
+        startBinauralBeat();
+      }
+    }, { once: true });
   </script>
 </body>
 </html>
