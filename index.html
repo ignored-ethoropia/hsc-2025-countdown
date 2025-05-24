@@ -51,6 +51,13 @@
       border-radius: 5px;
       cursor: pointer;
       z-index: 100;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    .fullscreen-icon.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
 
     @media (max-width: 400px) {
@@ -71,8 +78,10 @@
   </style>
 </head>
 <body>
-  <button class="fullscreen-icon" onclick="toggleFullScreen()" aria-label="Toggle fullscreen mode">⛶</button>
+  <button class="fullscreen-icon" id="fullscreenBtn" onclick="toggleFullScreen()" aria-label="Toggle fullscreen mode">⛶</button>
+
   <h1>HSC 2025 Countdown</h1>
+
   <div class="countdown" id="countdown"></div>
 
   <script>
@@ -103,15 +112,35 @@
     function toggleFullScreen() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
       }
     }
 
     updateCountdown();
     setInterval(updateCountdown, 1000);
+
+    // Auto-hide fullscreen icon
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    let hideTimer;
+
+    function showFullscreenBtn() {
+      fullscreenBtn.classList.remove('hidden');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => {
+        fullscreenBtn.classList.add('hidden');
+      }, 3000); // Hide after 3 seconds
+    }
+
+    // Show on any user interaction
+    ['mousemove', 'touchstart'].forEach(evt => {
+      document.addEventListener(evt, showFullscreenBtn);
+    });
+
+    // Start hiding after page load
+    window.onload = () => {
+      showFullscreenBtn();
+    };
   </script>
 </body>
 </html>
