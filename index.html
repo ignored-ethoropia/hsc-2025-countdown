@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>HSC 2025 Countdown</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       background: #f4f4f4;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -12,53 +16,55 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
       padding: 1rem;
-      box-sizing: border-box;
       text-align: center;
     }
 
     h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
+      font-size: 2.2rem;
+      margin: 1rem 0;
     }
 
     .countdown {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       background: #fff;
-      padding: 1rem 2rem;
+      padding: 1.2rem 1.5rem;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 90%;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
       word-wrap: break-word;
+      margin-bottom: 2rem;
     }
 
     .fullscreen-icon {
-      position: absolute;
+      position: fixed;
       top: 15px;
       right: 15px;
-      cursor: pointer;
-      font-size: 1.2rem;
+      font-size: 1rem;
       background: #333;
       color: #fff;
       border: none;
       padding: 0.5rem 1rem;
       border-radius: 5px;
+      cursor: pointer;
+      z-index: 100;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 400px) {
       h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
       }
 
       .countdown {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         padding: 1rem;
       }
 
       .fullscreen-icon {
-        font-size: 1rem;
+        font-size: 0.9rem;
         padding: 0.4rem 0.8rem;
       }
     }
