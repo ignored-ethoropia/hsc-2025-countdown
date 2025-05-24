@@ -41,7 +41,32 @@
       margin-bottom: 2rem;
     }
 
-    .fullscreen-icon, .sound-icon, .minimize-icon {
+    .progress-container {
+      width: 100%;
+      max-width: 400px;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 40px;
+      background-color: #4CAF50;
+      border-radius: 10px;
+      width: 0%;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
+      user-select: none;
+    }
+
+    .fullscreen-icon, .sound-icon {
       width: 40px;
       height: 40px;
       color: #000;
@@ -71,12 +96,6 @@
     .sound-group.hidden, .fullscreen-icon.hidden {
       opacity: 0;
       pointer-events: none;
-    }
-
-    .minimize-icon {
-      position: fixed;
-      bottom: 15px;
-      left: 15px;
     }
 
     .volume-slider-container {
@@ -119,7 +138,7 @@
         padding: 1rem;
       }
 
-      .fullscreen-icon, .sound-icon, .minimize-icon {
+      .fullscreen-icon, .sound-icon {
         width: 30px;
         height: 30px;
         font-size: 18px;
@@ -146,17 +165,19 @@
     <i class="fas fa-expand"></i>
   </button>
 
-  <button class="minimize-icon" id="minimizeBtn" onclick="openSmallWindow()" aria-label="Minimize to small window">
-    <i class="fas fa-compress"></i>
-  </button>
-
   <h1>HSC 2025 Countdown</h1>
 
   <div class="countdown" id="countdown"></div>
 
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar">0% left</div>
+  </div>
+
   <script>
     const countdownElement = document.getElementById('countdown');
+    const progressBar = document.getElementById('progressBar');
     const targetDate = new Date('2025-06-26T10:00:00+06:00');
+    const totalHoursCollegeLife = 16666;  // total hours of college life
 
     function pad(num) {
       return num.toString().padStart(2, '0');
@@ -168,15 +189,29 @@
 
       if (difference <= 0) {
         countdownElement.textContent = 'The HSC 2025 exam has started!';
+        progressBar.style.width = '100%';
+        progressBar.textContent = '0.0000% left';
         return;
       }
 
-      const totalHours = Math.floor(difference / (1000 * 60 * 60));
+      const remainingHours = difference / (1000 * 60 * 60);
+      const totalHoursLeft = Math.max(remainingHours, 0);
+
+      const hoursFixed = Math.floor(totalHoursLeft); // just integer hours in text, no decimal needed here
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
       countdownElement.textContent =
-        `${pad(totalHours)} hours, ${pad(minutes)} minutes, ${pad(seconds)} seconds left`;
+        `${pad(hoursFixed)} hours, ${pad(minutes)} minutes, ${pad(seconds)} seconds left`;
+
+      // Calculate progress based on total college life hours
+      const progress = ((totalHoursCollegeLife - totalHoursLeft) / totalHoursCollegeLife) * 100;
+      const clampedProgress = Math.min(Math.max(progress, 0), 100);
+      progressBar.style.width = `${clampedProgress}%`;
+
+      // Show percentage left inside progress bar with 4 decimals
+      const percentLeft = ((totalHoursLeft / totalHoursCollegeLife) * 100).toFixed(4);
+      progressBar.textContent = `${percentLeft}% left`;
     }
 
     function toggleFullScreen() {
@@ -187,301 +222,17 @@
       }
     }
 
-    function openSmallWindow() {
-      const smallWindow = window.open('', 'smallWindow', 'width=300,height=200,left=100,top=100,alwaysOnTop=yes');
-      smallWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Small Timer</title>
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              align-items: center;
-              height: 100vh;
-              margin: 0;
-              background: #f4f4f4;
-            }
-            .countdown {
-              font-size: 1.2rem;
-              background: #fff;
-              padding: 0.8rem;
-              border-radius: 8px;
-              box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-            }
-            .sound-icon {
-              position: fixed;
-              top: 10px;
-              left: 10px;
-              width: 24px;
-              height: 24px;
-              color: #000;
-              border: none;
-              cursor: pointer;
-              z-index: 100;
-              opacity: 1;
-              transition: opacity 0.5s ease;
-              background: none;
-              font-size: 16px;
-            }
-          </style>
-        </head>
-        <body>
-          <button class="sound-icon" id="soundBtn" onclick="toggleMute()" aria-label="Toggle sound">
-            <i class="fas fa-volume-mute" id="volumeIcon"></i>
-          </button>
-          <div class="countdown" id="smallCountdown"></div>
-          <script>
-            const targetDate = new Date('2025-06-26T10:00:00+06:00');
-            const countdownElement = document.getElementById('smallCountdown');
-            let audioContext;
-            let leftGain, rightGain;
-            let isPlaying = false;
-            let isMuted = true;
-            let lastVolume = 0.3;
+    // Dummy functions for sound (to avoid errors)
+    function toggleMute() {
+      // Implementation if needed
+    }
 
-            function pad(num) {
-              return num.toString().padStart(2, '0');
-            }
-
-            function updateCountdown() {
-              const now = new Date();
-              const difference = targetDate - now;
-
-              if (difference <= 0) {
-                countdownElement.textContent = 'The HSC 2025 exam has started!';
-                return;
-              }
-
-              const totalHours = Math.floor(difference / (1000 * 60 * 60));
-              const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-              const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-              countdownElement.textContent =
-                \`\${pad(totalHours)} hours, \${pad(minutes)} minutes, \${pad(seconds)} seconds left\`;
-            }
-
-            function startBinauralBeat() {
-              if (isPlaying) return;
-
-              audioContext = new (window.AudioContext || window.webkitAudioContext)();
-              const carrierFrequency = 400;
-              const beatFrequency = 40;
-
-              const leftOscillator = audioContext.createOscillator();
-              const rightOscillator = audioContext.createOscillator();
-
-              leftOscillator.frequency.value = carrierFrequency;
-              rightOscillator.frequency.value = carrierFrequency + beatFrequency;
-
-              leftGain = audioContext.createGain();
-              rightGain = audioContext.createGain();
-
-              const panner = audioContext.createStereoPanner();
-              panner.pan.value = -1;
-
-              const merger = audioContext.createChannelMerger(2);
-
-              leftOscillator.connect(leftGain);
-              leftGain.connect(panner);
-              panner.connect(merger, 0, 0);
-
-              rightOscillator.connect(rightGain);
-              rightGain.connect(merger, 0, 1);
-
-              merger.connect(audioContext.destination);
-
-              leftOscillator.start();
-              rightOscillator.start();
-
-              isPlaying = true;
-            }
-
-            function stopBinauralBeat() {
-              if (!isPlaying) return;
-
-              audioContext.close();
-              isPlaying = false;
-            }
-
-            function toggleBinauralBeat() {
-              if (isPlaying) {
-                stopBinauralBeat();
-              } else {
-                startBinauralBeat();
-              }
-            }
-
-            function adjustVolume(volume) {
-              if (leftGain) {
-                leftGain.gain.value = volume;
-                rightGain.gain.value = volume;
-                lastVolume = volume;
-              }
-            }
-
-            function toggleMute() {
-              if (isMuted) {
-                adjustVolume(0.3);
-                volumeIcon.classList.remove('fa-volume-mute');
-                volumeIcon.classList.add('fa-volume-up');
-                if (!isPlaying) {
-                  startBinauralBeat();
-                }
-              } else {
-                lastVolume = leftGain ? leftGain.gain.value : 0.3;
-                adjustVolume(0);
-                volumeIcon.classList.remove('fa-volume-up');
-                volumeIcon.classList.add('fa-volume-mute');
-              }
-              isMuted = !isMuted;
-            }
-
-            updateCountdown();
-            setInterval(updateCountdown, 1000);
-
-            // Start binaural beat on user interaction
-            document.addEventListener('click', () => {
-              if (!isPlaying && !isMuted) {
-                startBinauralBeat();
-              }
-            }, { once: true });
-          <\/script>
-        </body>
-        </html>
-      `);
-      smallWindow.document.close();
+    function adjustVolume(value) {
+      // Implementation if needed
     }
 
     updateCountdown();
     setInterval(updateCountdown, 1000);
-
-    // Auto-hide control group
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const soundGroup = document.getElementById('soundGroup');
-    const volumeSliderContainer = document.getElementById('volumeSliderContainer');
-    const volumeIcon = document.getElementById('volumeIcon');
-    let hideTimer;
-
-    function resetHideTimer() {
-      clearTimeout(hideTimer);
-      hideTimer = setTimeout(() => {
-        fullscreenBtn.classList.add('hidden');
-        soundGroup.classList.add('hidden');
-      }, 500); // Hide after 0.5 seconds
-    }
-
-    function showControlGroup() {
-      fullscreenBtn.classList.remove('hidden');
-      soundGroup.classList.remove('hidden');
-      resetHideTimer();
-    }
-
-    // Show on any user interaction
-    ['mousemove', 'touchstart', 'click'].forEach(evt => {
-      document.addEventListener(evt, showControlGroup);
-    });
-
-    // Start hiding after page load
-    window.onload = () => {
-      showControlGroup();
-    };
-
-    // Binaural Beat for Focus
-    let audioContext;
-    let leftGain, rightGain;
-    let isPlaying = false;
-    let isMuted = true; // Start in muted state
-    let lastVolume = 0.3; // Default volume when unmuted
-
-    function startBinauralBeat() {
-      if (isPlaying) return;
-
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const carrierFrequency = 400; // Base frequency in Hz
-      const beatFrequency = 40;     // Desired binaural beat frequency in Hz
-
-      const leftOscillator = audioContext.createOscillator();
-      const rightOscillator = audioContext.createOscillator();
-
-      leftOscillator.frequency.value = carrierFrequency;
-      rightOscillator.frequency.value = carrierFrequency + beatFrequency;
-
-      leftGain = audioContext.createGain();
-      rightGain = audioContext.createGain();
-
-      const panner = audioContext.createStereoPanner();
-      panner.pan.value = -1; // Left channel
-
-      const merger = audioContext.createChannelMerger(2);
-
-      leftOscillator.connect(leftGain);
-      leftGain.connect(panner);
-      panner.connect(merger, 0, 0);
-
-      rightOscillator.connect(rightGain);
-      rightGain.connect(merger, 0, 1);
-
-      merger.connect(audioContext.destination);
-
-      leftOscillator.start();
-      rightOscillator.start();
-
-      isPlaying = true;
-    }
-
-    function stopBinauralBeat() {
-      if (!isPlaying) return;
-
-      audioContext.close();
-      isPlaying = false;
-    }
-
-    function toggleBinauralBeat() {
-      if (isPlaying) {
-        stopBinauralBeat();
-      } else {
-        startBinauralBeat();
-      }
-    }
-
-    function adjustVolume(volume) {
-      if (leftGain) {
-        leftGain.gain.value = volume;
-        rightGain.gain.value = volume;
-        lastVolume = volume;
-      }
-    }
-
-    function toggleMute() {
-      if (isMuted) {
-        adjustVolume(0.3); // Set volume to 30% when unmuted
-        volumeIcon.classList.remove('fa-volume-mute');
-        volumeIcon.classList.add('fa-volume-up');
-        volumeSliderContainer.style.display = 'block';
-        if (!isPlaying) {
-          startBinauralBeat();
-        }
-      } else {
-        lastVolume = leftGain ? leftGain.gain.value : 0.3; // Store the current volume before muting
-        adjustVolume(0);
-        volumeIcon.classList.remove('fa-volume-up');
-        volumeIcon.classList.add('fa-volume-mute');
-        volumeSliderContainer.style.display = 'none';
-      }
-      isMuted = !isMuted;
-    }
-
-    // Start binaural beat on user interaction
-    document.addEventListener('click', () => {
-      if (!isPlaying && !isMuted) {
-        startBinauralBeat();
-      }
-    }, { once: true });
   </script>
 </body>
 </html>
