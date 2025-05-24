@@ -68,7 +68,7 @@
       transition: opacity 0.5s ease;
     }
 
-    .sound-group.hidden {
+    .sound-group.hidden, .fullscreen-icon.hidden {
       opacity: 0;
       pointer-events: none;
     }
@@ -180,7 +180,7 @@
     updateCountdown();
     setInterval(updateCountdown, 1000);
 
-    // Auto-hide fullscreen icon
+    // Auto-hide control group
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     const soundGroup = document.getElementById('soundGroup');
     const volumeSliderContainer = document.getElementById('volumeSliderContainer');
@@ -195,7 +195,7 @@
       }, 500); // Hide after 0.5 seconds
     }
 
-    function showFullscreenBtn() {
+    function showControlGroup() {
       fullscreenBtn.classList.remove('hidden');
       soundGroup.classList.remove('hidden');
       resetHideTimer();
@@ -203,12 +203,12 @@
 
     // Show on any user interaction
     ['mousemove', 'touchstart', 'click'].forEach(evt => {
-      document.addEventListener(evt, showFullscreenBtn);
+      document.addEventListener(evt, showControlGroup);
     });
 
     // Start hiding after page load
     window.onload = () => {
-      showFullscreenBtn();
+      showControlGroup();
     };
 
     // Binaural Beat for Focus
